@@ -1,0 +1,54 @@
+import allure
+import pytest
+
+from data import ORDER_DATA
+from pages.main_page import MainPage
+from pages.order_page import OrderPage
+from urls import Urls
+
+
+@allure.feature('Заказ самоката')
+class TestOrder:
+    @allure.title(
+        'Успешный заказ через {button_name} кнопку'
+    )
+    @pytest.mark.parametrize(
+        'order_button, button_name, order_data',
+        [
+            (
+                'top',
+                'верхнюю',
+                ORDER_DATA[0]
+            ),
+            (
+                'bottom',
+                'нижнюю',
+                ORDER_DATA[1]
+            ),
+        ],
+        ids=[
+            'top-order-button',
+            'bottom-order-button',
+        ]
+    )
+    def test_create_order_success(
+        self,
+        driver,
+        order_button,
+        button_name,
+        order_data
+    ):
+        main_page = MainPage(driver)
+        main_page.open(Urls.BASE_URL)
+        main_page.accept_cookies()
+        main_page.click_order_button(order_button)
+
+        order_page = OrderPage(driver)
+        order_page.fill_customer_form(order_data)
+        order_page.fill_rental_form(order_data)
+        order_page.submit_order()
+
+        assert (
+            'Заказ оформлен'
+            in order_page.get_success_message()
+        )
