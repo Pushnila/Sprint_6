@@ -29,9 +29,8 @@ class TestFaq:
         index,
         expected_answer
     ):
-        driver.get(Urls.BASE_URL)
-
         main_page = MainPage(driver)
+        main_page.open(Urls.BASE_URL)
         main_page.accept_cookies()
         main_page.open_question(index)
 

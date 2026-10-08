@@ -1,3 +1,4 @@
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -7,6 +8,9 @@ class BasePage:
 
     def __init__(self, driver):
         self.driver = driver
+
+    def open(self, url):
+        self.driver.get(url)
 
     def wait_for_visible(self, locator):
         return WebDriverWait(
@@ -27,6 +31,13 @@ class BasePage:
     def click(self, locator):
         self.wait_for_clickable(locator).click()
 
+    def click_via_script(self, locator):
+        element = self.wait_for_visible(locator)
+        self.driver.execute_script(
+            'arguments[0].click();',
+            element
+        )
+
     def set_text(self, locator, text):
         element = self.wait_for_visible(locator)
         element.clear()
@@ -35,20 +46,48 @@ class BasePage:
     def get_text(self, locator):
         return self.wait_for_visible(locator).text
 
-    def scroll_to(self, locator):
+    def click_if_visible(self, locator):
+        elements = self.driver.find_elements(*locator)
+        if elements and elements[0].is_displayed():
+            elements[0].click()
+
+    def scroll_to(self, locator, block='center', offset=0):
         element = self.wait_for_visible(locator)
         self.driver.execute_script(
-            "arguments[0].scrollIntoView({block: 'center'});",
-            element
+            "arguments[0].scrollIntoView({block: arguments[1]});",
+            element,
+            block
         )
+        if offset:
+            self.driver.execute_script(
+                'window.scrollBy(0, arguments[0]);',
+                offset
+            )
 
-    def wait_for_url(self, url):
-        WebDriverWait(
-            self.driver,
-            self.WAIT_TIMEOUT
-        ).until(
-            expected_conditions.url_to_be(url)
-        )
+    def is_url(self, url):
+        try:
+            WebDriverWait(
+                self.driver,
+                self.WAIT_TIMEOUT
+            ).until(expected_conditions.url_to_be(url))
+            return True
+        except TimeoutException:
+            return False
+
+    def is_url_contains(self, url_fragment):
+        try:
+            WebDriverWait(
+                self.driver,
+                self.WAIT_TIMEOUT
+            ).until(
+                expected_conditions.url_contains(url_fragment)
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def get_current_window_handle(self):
+        return self.driver.current_window_handle
 
     def switch_to_new_window(self, old_window):
         WebDriverWait(

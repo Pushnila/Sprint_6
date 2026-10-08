@@ -16,12 +16,12 @@ class TestOrder:
         'order_button, button_name, order_data',
         [
             (
-                MainPage.TOP_ORDER_BUTTON,
+                'top',
                 'верхнюю',
                 ORDER_DATA[0]
             ),
             (
-                MainPage.BOTTOM_ORDER_BUTTON,
+                'bottom',
                 'нижнюю',
                 ORDER_DATA[1]
             ),
@@ -38,9 +38,8 @@ class TestOrder:
         button_name,
         order_data
     ):
-        driver.get(Urls.BASE_URL)
-
         main_page = MainPage(driver)
+        main_page.open(Urls.BASE_URL)
         main_page.accept_cookies()
         main_page.click_order_button(order_button)
 
